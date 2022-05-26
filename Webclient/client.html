@@ -1,0 +1,130 @@
+<!doctype html>
+<style>
+    textarea { vertical-align: bottom; }
+    #output { overflow: auto; }
+    #output > p { overflow-wrap: break-word; }
+    #output span { color: blue; }
+    #output span.error { color: red; }
+    #n-data { width: 30px; }
+</style>
+<h2>WebSocket Test</h2>
+<div>
+    Websocket Server: <input type="text" id="remote-ip" name="remote-ip" value="127.0.0.1" />
+</div>
+<div>
+    <button id=open-connection>Open Connection</button>
+    <button id=close-connection>Close Connection</button>
+    Status: <span id=connection-status>DISCONNECTED</span>
+</div>
+<textarea id="editor" cols=60 rows=6 onkeypress="onEditorKeyPress();"></textarea>
+<div>
+    <button id=send-editor>Send Editor Data</button>
+</div>
+<div>
+    <button id=send-large-data>Send Large Data</button>
+    <label for="n-data">N Characters:</label>
+    <input type="text" id="n-data" name="n-data"/>
+    <button id=send-n-data>Send N characters</button>
+</div>
+<div id=output></div>
+<script>
+    // http://www.websocket.org/echo.html
+
+    var btnSendEditor = document.querySelector("#send-editor"),
+        btnSendLargeData = document.querySelector("#send-large-data"),
+        btnSendNData = document.querySelector("#send-n-data"),
+        btnSendClose = document.querySelector("#close-connection"),
+        btnOpenConnection = document.querySelector("#open-connection"),
+        output = document.querySelector("#output"),
+        textarea = document.querySelector("textarea"),
+        connectionStatus = document.querySelector("#connection-status");
+
+    connect();
+        
+    btnSendEditor.addEventListener("click", onClickButton);
+    btnSendLargeData.addEventListener("click", btnSendLargeData_onClick);
+    btnSendNData.addEventListener("click", btnSendNData_onClick);
+    btnSendClose.addEventListener("click", btnSendClose_onClick);
+    btnOpenConnection.addEventListener("click", btnOpenConnection_onClick);
+
+    function getWebsocketUri() {
+        return "ws://" + document.querySelector("#remote-ip").value + "/"
+    }
+
+    function connect() {
+        window.websocket = new WebSocket(getWebsocketUri());
+
+        websocket.onopen = function (e) {
+            connectionStatus.innerHTML = "CONNECTED"
+            doSend("connection test");
+        };
+
+        websocket.onclose = function (e) {
+            connectionStatus.innerHTML = "DISCONNECTED"
+            writeToScreen("<span>RESPONSE: " + e + "</span>");
+            window.e = e;
+        };
+
+        websocket.onmessage = function (e) {
+            writeToScreen("<span>RESPONSE: " + e.data + "</span>");
+        };
+
+        websocket.onerror = function (e) {
+            writeToScreen("<span class=error>ERROR:</span> " + e);
+        };
+    }
+
+    function doSend(message) {
+        writeToScreen("SENDING: " + message);
+        websocket.send(message);
+    }
+
+    function writeToScreen(message) {
+        output.insertAdjacentHTML("afterbegin", "<p>" + message + "</p>");
+    }
+
+    function onClickButton() {
+        sendEditorContent();
+    }
+
+    function btnSendLargeData_onClick() {
+        websocket.send("_".repeat(65633) + "UUUUU");  // 65538
+    }
+
+    function btnSendNData_onClick() {
+        let n = parseInt(document.querySelector("#n-data").value);
+        websocket.send("_".repeat(n));
+    }
+
+    function btnSendClose_onClick() {
+        websocket.close();
+    }
+
+    function btnOpenConnection_onClick() {
+        connect();
+    }
+
+    function sendEditorContent() {
+        var text = textarea.value;
+
+        text && doSend(text);
+        textarea.value = "";
+        textarea.focus();
+    }
+
+    function onEditorKeyPress(e) {
+        var event = window.event;
+        var key = event.keyCode;
+
+        // If the user has pressed enter
+        if (key === 13) {
+            sendEditorContent()
+            event.preventDefault()
+            event.stopPropagation()
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+</script>

@@ -1,0 +1,21 @@
+{
+    "name": "org.njax.simple-websocket-server",
+    "version": "1.0.0",
+    "displayName": "SimpleWebsocketServer",
+    "description": "This is a simple websocket server",
+    "unity": "2019.1",
+    "unityRelease": "0b5",
+    "documentationUrl": "https://github.com/thenotary",
+    "changelogUrl": "https://github.com/thenotary",
+    "licensesUrl": "",
+    "dependencies": {},
+    "keywords": [
+        "server",
+        "network"
+    ],
+    "author": {
+        "name": "TheNotary",
+        "email": "donotmailme@plz.com",
+        "url": "https://www.example.com"
+    }
+}
