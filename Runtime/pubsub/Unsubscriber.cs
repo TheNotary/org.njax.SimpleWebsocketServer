@@ -1,4 +1,6 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+
 namespace SimpleWebsocketServer
 {
     internal class Unsubscriber<WebsocketFrame> : IDisposable

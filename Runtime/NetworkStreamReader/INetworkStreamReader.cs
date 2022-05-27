@@ -1,4 +1,6 @@
-﻿namespace SimpleWebsocketServer
+﻿
+
+namespace SimpleWebsocketServer
 {
     public interface INetworkStreamReader
     {

@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Security.Cryptography;
 using SimpleWebsocketServer.Extensions;
+using System.IO;
+using System;
 
 namespace SimpleWebsocketServer
 {

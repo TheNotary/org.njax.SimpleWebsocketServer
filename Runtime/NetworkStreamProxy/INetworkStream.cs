@@ -1,4 +1,7 @@
-﻿namespace SimpleWebsocketServer
+﻿using System;
+using System.IO;
+
+namespace SimpleWebsocketServer
 {
     public interface INetworkStream
     {
