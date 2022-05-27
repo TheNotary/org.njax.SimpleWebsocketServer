@@ -1,10 +1,13 @@
-﻿using SimpleWebsocketServer.Extensions;
-using System.Threading;
+﻿using System.Threading;
 using System.Collections.Generic;
 using System;
 
+
 namespace SimpleWebsocketServer
 {
+
+        
+
     public class ChannelBridge
     {
         private Dictionary<string, List<IObserver<string>>> channels;
@@ -21,7 +24,7 @@ namespace SimpleWebsocketServer
 
         public IDisposable Subscribe(ChannelSubscriber channelSubscriber, string channel)
         {
-            List<IObserver<string>> observers = channels.GetOrCreate(channel);
+            List<IObserver<string>> observers = GetOrCreate(channels, channel);
 
             if (!observers.Contains(channelSubscriber))
             {
@@ -32,10 +35,22 @@ namespace SimpleWebsocketServer
 
         public void PublishContent(string channel, string content)
         {
-            List<IObserver<string>> observers = channels.GetOrCreate(channel);
+            List<IObserver<string>> observers = GetOrCreate(channels, channel);
 
             foreach (var observer in observers)
                 observer.OnNext(content);
         }
+
+        public TValue GetOrCreate<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey key) where TValue : new()
+        {
+            if (!dict.TryGetValue(key, out TValue val))
+            {
+                val = new TValue();
+                dict.Add(key, val);
+            }
+
+            return val;
+        }
+
     }
 }

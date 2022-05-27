@@ -37,16 +37,6 @@ namespace SimpleWebsocketServer.Extensions
             return ret;
         }
 
-        public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key) where TValue : new()
-        {
-            if (!dict.TryGetValue(key, out TValue val))
-            {
-                val = new TValue();
-                dict.Add(key, val);
-            }
-
-            return val;
-        }
         public static string Humanize(this string input)
         {
             Regex rgx = new Regex("[^a-zA-Z0-9\\s!]");

@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Text;
 using SimpleWebsocketServer.Extensions;
-
+using System.Linq;
 
 namespace SimpleWebsocketServer
 {
@@ -55,10 +55,10 @@ namespace SimpleWebsocketServer
                 if (frame.opcode == 0x08) // close message
                 {
                     frame.closeCode = frame.payloadLength >= 2
-                        ? BitConverter.ToUInt16(frame.cleartextPayload.SubArray(0, 2).Reverse().ToArray())
+                        ? BitConverter.ToUInt16(SubArray(frame.cleartextPayload, 0, 2).Reverse().ToArray())
                         : 0;
                     frame.closeCodeReason = frame.payloadLength > 2
-                        ? Encoding.UTF8.GetString(frame.cleartextPayload.SubArray(2))
+                        ? Encoding.UTF8.GetString(SubArray(frame.cleartextPayload, 2))
                         : "";
                     return frame;
                 }
@@ -71,6 +71,21 @@ namespace SimpleWebsocketServer
                 return frame;
             }
 
+        }
+
+        private T[] SubArray<T>(T[] array, int offset, int length)
+        {
+            T[] result = new T[length];
+            Array.Copy(array, offset, result, 0, length);
+            return result;
+        }
+
+        private T[] SubArray<T>(T[] array, int offset)
+        {
+            int length = array.Length - offset;
+            T[] result = new T[length];
+            Array.Copy(array, offset, result, 0, length);
+            return result;
         }
 
         public ulong determineMessageLength(byte[] headerBytes)

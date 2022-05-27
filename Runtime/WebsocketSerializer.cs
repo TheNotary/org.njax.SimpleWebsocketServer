@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using SimpleWebsocketServer.Extensions;
 using System.IO;
 using System;
+using System.Linq;
 
 namespace SimpleWebsocketServer
 {
@@ -95,8 +96,15 @@ namespace SimpleWebsocketServer
             if (frame.payloadLength < 126)
                 return new byte[0];  // no extended payload length for numbers less than 126
             if (frame.payloadLength <= 65535)
-                return BitConverter.GetBytes(frame.payloadLength).SubArray(0, 2).Reverse().ToArray();
+                return SubArray(BitConverter.GetBytes(frame.payloadLength), 0, 2).Reverse().ToArray();
             return BitConverter.GetBytes(frame.payloadLength).Reverse().ToArray(); // the next 8 bytes are payload length
+        }
+
+        private static T[] SubArray<T>(this T[] array, int offset, int length)
+        {
+            T[] result = new T[length];
+            Array.Copy(array, offset, result, 0, length);
+            return result;
         }
 
     }
