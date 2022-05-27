@@ -5,7 +5,7 @@ VisualStudioVersion = 17.1.32414.318
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebsocketEdu", "Runtime\SimpleWebsocketServer.csproj", "{85672984-B724-4C1B-B092-7917CFEBD2A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebsocketEduTest", "Tests\SimpleWebsocketServerTest.csproj", "{028D61D1-AA9A-4C60-9C52-9218560E5198}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebsocketEduTest", "Tests~\SimpleWebsocketServerTest.csproj", "{028D61D1-AA9A-4C60-9C52-9218560E5198}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

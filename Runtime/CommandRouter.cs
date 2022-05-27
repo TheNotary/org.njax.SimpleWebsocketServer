@@ -12,7 +12,7 @@ namespace SimpleWebsocketServer
         {
             _websocketClient = websocketClient;
         }
-
+        
         public string HandleWebsocketMessage(WebsocketFrame websocketFrame)
         {
             INetworkStream stream = _websocketClient.Stream;
