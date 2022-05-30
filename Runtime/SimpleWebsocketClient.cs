@@ -9,7 +9,7 @@ using System.Text;
 
 namespace SimpleWebsocketServer
 {
-    internal class SimpleWebsocketClient
+    public class SimpleWebsocketClient
     {
         private string localAddress;
         private int port;

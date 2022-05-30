@@ -35,6 +35,7 @@ x Fix bug where generating mask was iffy
 x Feed password in from top level
 x Make it so a C# client can connect to the server via SimpleWebsocketClient.Connect("127.0.0.1:80")
 - Figure out packaging it up
+  - Create proper static methods where extensions were used
 - Carve it into libraries for use in other projects
 - Add support for client.SendBytes() for binary instead of text communication
 - Make it so WebsocketClient and WebsocketSerializer share code professionally

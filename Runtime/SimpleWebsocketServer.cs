@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 [assembly: InternalsVisibleTo("SimpleWebsocketServerTest")]
 namespace SimpleWebsocketServer
 {
-    internal class SimpleWebsocketServer
+    public class SimpleWebsocketServer
     {
         const int defaultThreadPoolSize = 20;
         private string localAddress;

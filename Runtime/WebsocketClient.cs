@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections;
 using System.Text;
-using SimpleWebsocketServer.Extensions;
 using System.Linq;
 
 namespace SimpleWebsocketServer

@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Security.Cryptography;
-using SimpleWebsocketServer.Extensions;
 using System.IO;
 using System;
 using System.Linq;
@@ -75,13 +74,20 @@ namespace SimpleWebsocketServer
 
         internal byte SerializeFirstHeaderByte()
         {
-            int header1Left = new BitArray(new bool[4] {
-               false, false, false, frame.fin }
-            ).ToBytes()[0];
+            int header1Left = BitsToBytes(new BitArray(new bool[4] {
+               false, false, false, frame.fin })
+            )[0];
             header1Left = header1Left << 4;
             int joinedHeader1 = header1Left + frame.opcode;
             byte firstByte = BitConverter.GetBytes(joinedHeader1)[0];
             return firstByte;
+        }
+
+        internal byte[] BitsToBytes(BitArray bits)
+        {
+            byte[] ret = new byte[(bits.Length - 1) / 8 + 1];
+            bits.CopyTo(ret, 0);
+            return ret;
         }
 
         internal byte SerializeSecondHeaderByte()

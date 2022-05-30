@@ -2,6 +2,7 @@
 using Xunit;
 using SimpleWebsocketServer.Extensions;
 using SimpleWebsocketServer;
+using System.Text;
 
 namespace SimpleWebsocketServerTest
 {
@@ -19,6 +20,7 @@ namespace SimpleWebsocketServerTest
             WebsocketClient websocketClient = CreateWebsocketClient(validWebsocketHello);
             byte[] headerBytes = new byte[2];
             websocketClient.Stream.Read(headerBytes, 0, headerBytes.Length);
+            byte[] expectedCleartextBytes = Encoding.UTF8.GetBytes("hello");
 
             // when
             WebsocketFrame frame = websocketClient.ConsumeFrameFromStream(headerBytes);
@@ -29,7 +31,7 @@ namespace SimpleWebsocketServerTest
             frame.isMasked.Should().BeTrue();
             frame.mask.Should().Equal(new byte[4] { 90, 120, 149, 83 });
             frame.payloadLength.Should().Be(5);
-            frame.cleartextPayload.Should().Equal("hello".ToBytes());
+            frame.cleartextPayload.Should().Equal(expectedCleartextBytes);
         }
 
         [Fact]
