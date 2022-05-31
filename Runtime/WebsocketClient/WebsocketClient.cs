@@ -51,7 +51,7 @@ namespace SimpleWebsocketServer
             _stream.Write(handshakeBytes, 0, handshakeBytes.Length);
 
             // Consume handshake response
-            ConsumeHandshakeResponse(_stream);
+            ConsumeHandshakeResponse();
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace SimpleWebsocketServer
                         : "";
                     return frame;
                 }
-                throw new Exception("Unknown opcode sent from client, crashing connection");
+                throw new ClientClosedConnectionException("Unknown opcode sent from client, crashing connection");
             }
             else
             {
@@ -126,8 +126,9 @@ namespace SimpleWebsocketServer
             return true;
         }
 
-        private void ConsumeHandshakeResponse(INetworkStream networkStream)
+        public void ConsumeHandshakeResponse()
         {
+            INetworkStream networkStream = _stream;
             NetworkStreamReader sr = new NetworkStreamReader(networkStream);
 
             string debug = "";
@@ -249,6 +250,11 @@ namespace SimpleWebsocketServer
         {
             Console.WriteLine("Message Received so should be relayed: " + content);
             SendMessage(content);
+        }
+        public void SendCloseFrame()
+        {
+            byte[] closeFrame = TcpController.BuildCloseFrameClient();
+            _stream.Write(closeFrame, 0, closeFrame.Length);
         }
 
         internal static string GenerateRandomPassword()

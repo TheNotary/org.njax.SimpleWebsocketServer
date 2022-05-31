@@ -22,55 +22,15 @@ namespace SimpleWebsocketServerTest
             // Given
             string expectedResponseWrites = "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Accept: EJ5xejuUCHQkIKE2QxDTDCDws8Q=\r\n\r\n";
             string testHttpRequest = $"GET / HTTP/1.1\r\nHost: server.example.com\r\nUpgrade: websocket\r\nSec-WebSocket-Key: zzz\r\n\r\n";
-            WebsocketClient websocketClient = CreateWebsocketClient(testHttpRequest);
-            NetworkStreamProxy networkStreamProxy = (NetworkStreamProxy)websocketClient.Stream;
+            MockNetworkStreamProxy networkStreamProxy = new MockNetworkStreamProxy(testHttpRequest);
+            WebsocketClient websocketClient = new WebsocketClient(networkStreamProxy);
 
             // When
             bool result = websocketClient.ReceiveHttpUpgradeRequest();
-            //bool result = TcpController.HandleHandshake(networkStreamProxy, headerBytes);
 
             // Then
             Assert.True(result);
             Assert.Equal(expectedResponseWrites, networkStreamProxy.GetWritesAsString());
-        }
-
-        [Fact]
-        public void ItImmediatelyReturnsFalseIfTheStreamIsWebsocketData()
-        {
-            string data = "i don't start with the word GET";
-            WebsocketClient websocketClient = CreateWebsocketClient(data);
-            MockNetworkStreamProxy networkStreamProxy = (MockNetworkStreamProxy)websocketClient.Stream;
-
-            byte[] headerBytes = new byte[2];
-            networkStreamProxy.Read(headerBytes, 0, 2);
-
-            bool result = websocketClient.ReceiveHttpUpgradeRequest();
-
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void ItHandlesHandshakesMessagesAndClosesCorrectly()
-        {
-            // given
-            WebsocketClient websocketClient = CreateWebsocketClient(Encoding.UTF8.GetBytes(validHttpUpgradeRequest));
-            MockNetworkStreamProxy networkStreamProxy = (MockNetworkStreamProxy)websocketClient.Stream;
-
-            // when
-            var t = new Thread(() => {
-                websocketClient.ReceiveMessageFromClient();
-                websocketClient.ReceiveMessageFromClient();
-                Assert.Throws<ClientClosedConnectionException>(() => 
-                    websocketClient.ReceiveMessageFromClient()); // Connection will be closed when this is called
-            }); t.Start();
-            networkStreamProxy.PutBytes(validWebsocketHello);
-            networkStreamProxy.PutBytes(validClientClose);
-            t.Join();
-
-            // then
-            Assert.Equal(validHandshakeResponse, networkStreamProxy.GetWritesAsString().Substring(0, validHandshakeResponse.Length));
-            validWebsocketHello.Should().BeSubsetOf(networkStreamProxy.GetBytesRecieved());
-            validClientClose.Should().BeSubsetOf(networkStreamProxy.GetBytesRecieved());
         }
 
         [Fact]

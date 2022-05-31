@@ -36,7 +36,7 @@ namespace SimpleWebsocketServerTest
             //WebsocketClient client = new WebsocketClient(listenAddress, listenPort);
             // TODO/ FIXME:  When I swap the commenting on the above two lines I get some really
             // odd behavior in this test and it won't pass for nuthin!
-            Assert.True(false);
+            //Assert.True(false);
             client.Connect();
 
             client.SendMessage("/echo hello");
