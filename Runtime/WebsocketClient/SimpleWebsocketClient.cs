@@ -28,6 +28,11 @@ namespace SimpleWebsocketServer
             this.websocketToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(GenerateRandomPassword()));
         }
 
+        public string ReceiveMessageFromClient()
+        {
+            return "";
+        }
+
         public void Handshake()
         {
             tcpClient = new TcpClient(this.localAddress, this.port);

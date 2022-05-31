@@ -11,7 +11,7 @@ namespace SimpleWebsocketServerTest
         public void ItCanSerializeWebsocketsIntoBytes()
         {
             // when
-            string actualPassword = SimpleWebsocketServer.SimpleWebsocketServer.GenerateRandomPassword();
+            string actualPassword = SimpleWebsocketListener.GenerateRandomPassword();
 
             // then
             actualPassword.Length.Should().Be(10);
@@ -24,7 +24,7 @@ namespace SimpleWebsocketServerTest
             int listenPort = 80;
 
             // given
-            SimpleWebsocketServer.SimpleWebsocketServer simpleWebsocketServer = new SimpleWebsocketServer.SimpleWebsocketServer(listenAddress, listenPort);
+            SimpleWebsocketListener simpleWebsocketServer = new SimpleWebsocketListener(listenAddress, listenPort);
             var t = new Thread(() =>
             {
                 simpleWebsocketServer.Start();
@@ -35,6 +35,11 @@ namespace SimpleWebsocketServerTest
             client.Handshake();
 
             client.SendMessage("hello");
+            client.SendMessage("/echo hello");
+            // TODO:  I need to tell the client to read the hello that the server is meant to echo back 
+            //  and assert it's correctness
+            Assert.True(false);
+            //client.Read();
             client.SendMessage("/auth " + simpleWebsocketServer.adminPassword);
             client.SendMessage("/close");
 

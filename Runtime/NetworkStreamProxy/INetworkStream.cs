@@ -15,6 +15,5 @@ namespace SimpleWebsocketServer
         void ClearDebugBuffer();
         string GetWritesAsString();
         byte[] GetWrites();
-
     }
 }

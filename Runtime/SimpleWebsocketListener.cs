@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 [assembly: InternalsVisibleTo("SimpleWebsocketServerTest")]
 namespace SimpleWebsocketServer
 {
-    public class SimpleWebsocketServer
+    public class SimpleWebsocketListener
     {
         const int defaultThreadPoolSize = 20;
         private string localAddress;
@@ -19,9 +19,9 @@ namespace SimpleWebsocketServer
         private TcpListener? server;
         private LinkedList<Thread> threads = new LinkedList<Thread>();
 
-        public SimpleWebsocketServer(string localAddress, int port) : this(localAddress, port, defaultThreadPoolSize, GenerateRandomPassword()) { }
+        public SimpleWebsocketListener(string localAddress, int port) : this(localAddress, port, defaultThreadPoolSize, GenerateRandomPassword()) { }
 
-        public SimpleWebsocketServer(string localAddress, int port, int threadPoolSize, string adminPassword)
+        public SimpleWebsocketListener(string localAddress, int port, int threadPoolSize, string adminPassword)
         {
             this.localAddress = localAddress;
             this.port = port;

@@ -14,30 +14,33 @@ namespace SimpleWebsocketServer
                 throw new ArgumentNullException(nameof(parameters));
 
             object[] parameterz = (object[])parameters;
-
+            
+            // WebsocketListener.AcceptClient()...
             TcpClient tcpClient = ((TcpListener)parameterz[0]).AcceptTcpClient();
             ChannelBridge channelBridge = (ChannelBridge) parameterz[1]; 
             INetworkStream networkStream = new NetworkStreamProxy(tcpClient.GetStream());
             WebsocketClient websocketClient = new WebsocketClient(networkStream, channelBridge);
-
+            
             string remoteIp = GetRemoteIp(tcpClient);
+
             Console.WriteLine("A client connected from {0}", remoteIp);
 
+            // DealWithWebsocketUpgrade()
             while (!tcpClient.Connected) ;
+            while (!networkStream.DataAvailable) ; // block here till we have data
+            while (tcpClient.Available < 2) ;      // Wait for the header bytes
+
+            bool handshakSuccess = websocketClient.ReceiveHttpUpgradeRequest();
+
+            // Handle ordinary websocket communication
             while (tcpClient.Connected)
             {
-                while (!networkStream.DataAvailable) ; // block here till we have data
-
-                // wait for the first 2 bytes to be available.  Websocket messages consist of a two byte header detailing 
-                // the shape of the incoming websocket frame...
-                while (tcpClient.Available < 2) ;
-
                 Console.WriteLine("New Bytes ready for processing from client: " + tcpClient.Available);
-                string msg;
-
                 try
                 {
-                    msg = HandleClientMessage(websocketClient, channelBridge);
+                    WebsocketFrame websocketFrame = websocketClient.ReceiveMessageFromClient();
+                    CommandRouter commandRouter = new CommandRouter(websocketClient);
+                    commandRouter.HandleWebsocketMessage(websocketFrame);
                 }
                 catch (ClientClosedConnectionException ex)
                 {
@@ -61,34 +64,6 @@ namespace SimpleWebsocketServer
 
                 networkStream.ClearDebugBuffer();
             }
-        }
-
-        public static string HandleClientMessage(WebsocketClient websocketClient, ChannelBridge channelBridge)
-        {
-            INetworkStream networkStream = websocketClient.Stream;
-            // Get the client's data now that they've at least gotten to the "GE" part of the HTTP upgrade request or the frame header.
-            Byte[] headerBytes = new Byte[2];
-            networkStream.Read(headerBytes, 0, headerBytes.Length);
-            if (HandleHandshake(networkStream, headerBytes)) return "";
-
-            // Handle ordinary websocket communication
-            WebsocketFrame websocketFrame = websocketClient.ConsumeFrameFromStream(headerBytes);
-            CommandRouter commandRouter = new CommandRouter(websocketClient);
-            return commandRouter.HandleWebsocketMessage(websocketFrame);
-        }
-
-        public static bool HandleHandshake(INetworkStream stream, byte[] headerBytes)
-        {
-            String data = Encoding.UTF8.GetString(headerBytes);
-
-            if (data != "GE")  // The handshake always begins with the line "GET " and websocket frames can't begin with G unless an extension was negotiated
-                return false;
-
-            HttpHandshaker handshaker = new HttpHandshaker(stream, headerBytes);
-            handshaker.ConsumeHttpUpgradeRequestAndCollectWebsocketHeader();
-            handshaker.RespondToHandshake();
-            Console.WriteLine("Upgraded client to websockets.");
-            return true;
         }
 
         public static byte[] BuildCloseFrame(byte[] closeCodeBytes)

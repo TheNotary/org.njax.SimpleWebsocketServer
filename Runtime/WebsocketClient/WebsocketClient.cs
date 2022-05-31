@@ -72,6 +72,32 @@ namespace SimpleWebsocketServer
 
         }
 
+        public bool ReceiveHttpUpgradeRequest()
+        {
+            // Get the client's data now that they've at least gotten to the "GE" part of the HTTP upgrade request or the frame header.
+            Byte[] headerBytes = new Byte[2];
+            _stream.Read(headerBytes, 0, headerBytes.Length);
+            String data = Encoding.UTF8.GetString(headerBytes);
+
+            if (data != "GE")  // The handshake always begins with the line "GET " and websocket frames can't begin with G unless an extension was negotiated
+                throw new Exception("The first message that came in wasn't a respectable handshake.");
+
+            HttpHandshaker handshaker = new HttpHandshaker(_stream, headerBytes);
+            handshaker.ConsumeHttpUpgradeRequestAndCollectWebsocketHeader();
+            handshaker.RespondToHandshake();
+            Console.WriteLine("Upgraded client to websockets.");
+            return true;
+        }
+
+        public WebsocketFrame ReceiveMessageFromClient()
+        {
+            Byte[] headerBytes = new Byte[2];
+            _stream.Read(headerBytes, 0, headerBytes.Length);
+
+            WebsocketFrame websocketFrame = ConsumeFrameFromStream(headerBytes);
+            return websocketFrame;
+        }
+
         private T[] SubArray<T>(T[] array, int offset, int length)
         {
             T[] result = new T[length];
