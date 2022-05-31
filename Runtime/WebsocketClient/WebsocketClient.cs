@@ -3,16 +3,20 @@ using System.IO;
 using System.Collections;
 using System.Text;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Net.Sockets;
 
 namespace SimpleWebsocketServer
 {
     public class WebsocketClient : ChannelSubscriber
     {
-        INetworkStream _stream;
-        WebsocketFrame frame;
+        INetworkStream? _stream;
+        public ChannelBridge? channelBridge;
 
-        // Bayeux Bridge
-        public ChannelBridge channelBridge;
+        TcpClient? tcpClient;
+        string localAddress = "";
+        int port;
+        string? websocketToken;
 
         public bool AdminAuthenticated { get; set; }
 
@@ -27,25 +31,49 @@ namespace SimpleWebsocketServer
             AdminAuthenticated = false;
         }
 
+        public WebsocketClient(string localAddress, int port)
+        {
+            this.localAddress = localAddress;
+            this.port = port;
+            this.websocketToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(GenerateRandomPassword()));
+        }
+
+        public void Connect()
+        {
+            tcpClient = new TcpClient(this.localAddress, this.port);
+            _stream = new NetworkStreamProxy(tcpClient.GetStream());
+
+            while (!tcpClient.Connected) ;   // Block until connected
+
+            // perform handshake...
+            string handshake = $"GET / HTTP/1.1\r\nHost: server.example.com\r\nUpgrade: websocket\r\nSec-WebSocket-Key: ${websocketToken}\r\n\r\n";
+            byte[] handshakeBytes = Encoding.UTF8.GetBytes(handshake);
+            _stream.Write(handshakeBytes, 0, handshakeBytes.Length);
+
+            // Consume handshake response
+            ConsumeHandshakeResponse(_stream);
+        }
+
         /// <summary>
         /// This method will consume the next frame from the stream depending on the length of the payload as 
         /// indicated by headerBytes
         /// </summary>
         public WebsocketFrame ConsumeFrameFromStream(byte[] headerBytes)
         {
+            WebsocketFrame frame = new WebsocketFrame();
             frame.fin = (headerBytes[0] & 0b10000000) != 0;
             frame.isMasked = (headerBytes[1] & 0b10000000) != 0;
             frame.opcode = headerBytes[0] & 0b00001111;
 
             frame.payloadLength = determineMessageLength(headerBytes);
-            frame.mask = consumeMask();
+            frame.mask = consumeMask(frame);
 
             if (frame.payloadLength == 0)
                 Console.WriteLine("payloadLength == 0");
 
             if (frame.isMasked || frame.payloadLength == 0)
             {
-                frame.cleartextPayload = decodeMessage().ToArray();
+                frame.cleartextPayload = decodeMessage(frame).ToArray();
 
                 if (frame.opcode == 0x01) // text message
                 {
@@ -65,11 +93,20 @@ namespace SimpleWebsocketServer
             }
             else
             {
-                byte[] clearText = new byte[frame.payloadLength];
-                _stream.Read(clearText, 0, clearText.Length);
+                frame.cleartextPayload = new byte[frame.payloadLength];
+                _stream.Read(frame.cleartextPayload, 0, frame.cleartextPayload.Length);
                 return frame;
             }
 
+        }
+        
+        public WebsocketFrame ReceiveMessageFromClient()
+        {
+            Byte[] headerBytes = new Byte[2];
+            _stream.Read(headerBytes, 0, headerBytes.Length);
+
+            WebsocketFrame websocketFrame = ConsumeFrameFromStream(headerBytes);
+            return websocketFrame;
         }
 
         public bool ReceiveHttpUpgradeRequest()
@@ -89,13 +126,20 @@ namespace SimpleWebsocketServer
             return true;
         }
 
-        public WebsocketFrame ReceiveMessageFromClient()
+        private void ConsumeHandshakeResponse(INetworkStream networkStream)
         {
-            Byte[] headerBytes = new Byte[2];
-            _stream.Read(headerBytes, 0, headerBytes.Length);
+            NetworkStreamReader sr = new NetworkStreamReader(networkStream);
 
-            WebsocketFrame websocketFrame = ConsumeFrameFromStream(headerBytes);
-            return websocketFrame;
+            string debug = "";
+            string line;
+            while (true)  // TODO: implement a receive timeout
+            {
+                line = sr.ReadUntilCarriageReturn();
+                debug += line + "\r\n";
+                if (line == "") break;  // EOF reached
+            }
+
+            // ValidateThatThisIsReallyAValidResponse()
         }
 
         private T[] SubArray<T>(T[] array, int offset, int length)
@@ -137,7 +181,7 @@ namespace SimpleWebsocketServer
             return msglen64;
         }
 
-        public MemoryStream decodeMessage()
+        public MemoryStream decodeMessage(WebsocketFrame frame)
         {
             MemoryStream decodedStream = new MemoryStream();
 
@@ -170,7 +214,7 @@ namespace SimpleWebsocketServer
         /// If the frame is not masked, will return an empty byte array.
         /// </returns>
         /// </remarks>
-        public byte[] consumeMask()
+        public byte[] consumeMask(WebsocketFrame frame)
         {
             if (!frame.isMasked)
                 return new byte[0];
@@ -205,6 +249,28 @@ namespace SimpleWebsocketServer
         {
             Console.WriteLine("Message Received so should be relayed: " + content);
             SendMessage(content);
+        }
+
+        internal static string GenerateRandomPassword()
+        {
+            int tokenLength = 10;
+
+            char[] charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&()".ToCharArray();
+            int byteSize = 256; //Labelling convenience
+            int biasZone = byteSize - (byteSize % charSet.Length);
+
+            byte[] rBytes = new byte[tokenLength]; //Do as much before and after lock as possible
+            char[] rName = new char[tokenLength];
+
+            RandomNumberGenerator rng = RandomNumberGenerator.Create();
+            rng.GetBytes(rBytes);
+            for (var i = 0; i < tokenLength; i++)
+            {
+                rName[i] = charSet[rBytes[i] % charSet.Length];
+            }
+
+            return new string(rName);
+            //return "password";
         }
     }
 }

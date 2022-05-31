@@ -2,6 +2,7 @@
 using System.Threading;
 using SimpleWebsocketServer;
 using Xunit;
+using System.Text;
 
 namespace SimpleWebsocketServerTest
 {
@@ -32,19 +33,21 @@ namespace SimpleWebsocketServerTest
 
             // when
             SimpleWebsocketClient client = new SimpleWebsocketClient(listenAddress, listenPort);
-            client.Handshake();
-
-            client.SendMessage("hello");
-            client.SendMessage("/echo hello");
-            // TODO:  I need to tell the client to read the hello that the server is meant to echo back 
-            //  and assert it's correctness
+            //WebsocketClient client = new WebsocketClient(listenAddress, listenPort);
+            // TODO/ FIXME:  When I swap the commenting on the above two lines I get some really
+            // odd behavior in this test and it won't pass for nuthin!
             Assert.True(false);
-            //client.Read();
+            client.Connect();
+
+            client.SendMessage("/echo hello");
+            WebsocketFrame frame = client.ReceiveMessageFromClient();
+            frame.cleartextPayload.Should().Equal(Encoding.UTF8.GetBytes("hello"));
+
             client.SendMessage("/auth " + simpleWebsocketServer.adminPassword);
             client.SendMessage("/close");
 
             // then
-            bool threadJoined = t.Join(600);
+            bool threadJoined = t.Join(900);
             threadJoined.Should().BeTrue();
         }
 

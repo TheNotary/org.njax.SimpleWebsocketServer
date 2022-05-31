@@ -28,12 +28,7 @@ namespace SimpleWebsocketServer
             this.websocketToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(GenerateRandomPassword()));
         }
 
-        public string ReceiveMessageFromClient()
-        {
-            return "";
-        }
-
-        public void Handshake()
+        public void Connect()
         {
             tcpClient = new TcpClient(this.localAddress, this.port);
             networkStream = new NetworkStreamProxy(tcpClient.GetStream());
@@ -48,6 +43,13 @@ namespace SimpleWebsocketServer
 
             // Consume handshake response
             ConsumeHandshakeResponse(networkStream);
+        }
+
+        public WebsocketFrame ReceiveMessageFromClient()
+        {
+            if (websocketClient == null)
+                throw new InvalidOperationException("ReceiveMessageFromClient was called when websocketClient was null.");
+            return websocketClient.ReceiveMessageFromClient();
         }
 
         internal void SendCloseFrame()

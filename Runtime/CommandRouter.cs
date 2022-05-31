@@ -61,6 +61,10 @@ namespace SimpleWebsocketServer
                 case ("/a"):
                     AuthenticateClient(msg);
                     break;
+                case ("/echo"):
+                case ("/e"):
+                    EchoMessage(msg);
+                    break;
                 case ("/subscribe"):
                 case ("/s"):
                     SubscribeToChannel(msg);
@@ -73,6 +77,12 @@ namespace SimpleWebsocketServer
                     Console.WriteLine("Client sent unknown command");
                     break;
             }
+        }
+
+        private void EchoMessage(string msg)
+        {
+            string cleanMsg = StripCommand(msg);
+            _websocketClient.SendMessage(cleanMsg);
         }
 
         /// <summary>

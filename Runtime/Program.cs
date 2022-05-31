@@ -12,9 +12,10 @@ namespace SimpleWebsocketServer
 
         static void Main(string[] args)
         {
-            IConfigurationRoot configuration = new ConfigurationBuilder().AddUserSecrets<WebsocketApp>().Build();
+            //IConfigurationRoot configuration = new ConfigurationBuilder().AddUserSecrets<WebsocketApp>().Build();
 
-            string adminPassword = configuration["WEBSOCKET_SERVER_ADMIN_PASSWORD"];
+            //string adminPassword = configuration["WEBSOCKET_SERVER_ADMIN_PASSWORD"];
+            string adminPassword = "decxzXcSDPLDKCvujds";
             SimpleWebsocketListener simpleWebsocketServer = new SimpleWebsocketListener("0.0.0.0", 80, 2, adminPassword);
 
             // I guess running this from it's own thread prevents those console bugs where the console wasn't updating until I keypressed it or something...
