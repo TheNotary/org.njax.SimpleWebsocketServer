@@ -16,6 +16,7 @@ namespace SimpleWebsocketServer
         string localAddress = "";
         int port;
         string? websocketToken;
+        bool maskOutboundMessages = false;
 
         public bool AdminAuthenticated { get; set; }
 
@@ -35,6 +36,7 @@ namespace SimpleWebsocketServer
             this.localAddress = localAddress;
             this.port = port;
             this.websocketToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(GenerateRandomPassword()));
+            this.maskOutboundMessages = true;
         }
 
         public void Connect()
@@ -102,6 +104,7 @@ namespace SimpleWebsocketServer
         
         public WebsocketFrame ReceiveMessageFromClient()
         {
+            while (!_stream.DataAvailable) ;  // TODO: implement a time out and fancy stuff for waiting for 2 bytes available specifically
             Byte[] headerBytes = new Byte[2];
             _stream.Read(headerBytes, 0, headerBytes.Length);
 
@@ -227,7 +230,7 @@ namespace SimpleWebsocketServer
 
         public void SendMessage(string msg)
         {
-            SendMessage(msg, false);
+            SendMessage(msg, maskOutboundMessages);
         }
 
         public void SendMessage(string msg, bool isMasked)
@@ -276,7 +279,6 @@ namespace SimpleWebsocketServer
             }
 
             return new string(rName);
-            //return "password";
         }
     }
 }

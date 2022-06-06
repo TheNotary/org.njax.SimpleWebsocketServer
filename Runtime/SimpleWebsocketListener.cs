@@ -58,8 +58,7 @@ namespace SimpleWebsocketServer
                     threads.AddLast(t);
                     Console.WriteLine("Started new thread, threadcount at " + threads.Count);
                 }
-                // FIXME: that weird bug where the console doesn't update is probably because I'm using this while:true loop and not explicitly managing updates
-                Thread.Sleep(500);
+                Thread.Sleep(50); // Fixes CPU over-consumption issue
 
                 // Clean up dead threads
                 if (threads.First == null) continue;

@@ -32,11 +32,10 @@ namespace SimpleWebsocketServerTest
             }); t.Start();
 
             // when
-            SimpleWebsocketClient client = new SimpleWebsocketClient(listenAddress, listenPort);
-            //WebsocketClient client = new WebsocketClient(listenAddress, listenPort);   // this line is desired final outcome
-            // TODO/ FIXME:  When I swap the commenting on the above two lines I get some really
-            // odd behavior in this test and it won't pass for nuthin!
-            //Assert.True(false);
+            //SimpleWebsocketClient client = new SimpleWebsocketClient(listenAddress, listenPort);
+            WebsocketClient client = new WebsocketClient(listenAddress, listenPort);   // this line is desired final outcome
+
+            // Theory:  If we wait here for the server to be ready, then things will work or we'll get different error messages at least
             client.Connect();
 
             client.SendMessage("/echo hello");
@@ -47,7 +46,7 @@ namespace SimpleWebsocketServerTest
             client.SendMessage("/close");
 
             // then
-            bool threadJoined = t.Join(900);
+            bool threadJoined = t.Join(400);
             threadJoined.Should().BeTrue();
         }
 
