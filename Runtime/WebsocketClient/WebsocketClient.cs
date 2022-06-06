@@ -13,7 +13,6 @@ namespace SimpleWebsocketServer
         INetworkStream? _stream;
         public ChannelBridge? channelBridge;
 
-        TcpClient? tcpClient;
         string localAddress = "";
         int port;
         string? websocketToken;
@@ -40,8 +39,9 @@ namespace SimpleWebsocketServer
 
         public void Connect()
         {
-            tcpClient = new TcpClient(this.localAddress, this.port);
+            TcpClient tcpClient = new TcpClient(this.localAddress, this.port);
             _stream = new NetworkStreamProxy(tcpClient.GetStream());
+
 
             while (!tcpClient.Connected) ;   // Block until connected
 

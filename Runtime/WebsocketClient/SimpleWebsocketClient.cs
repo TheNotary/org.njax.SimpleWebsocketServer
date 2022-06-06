@@ -40,7 +40,6 @@ namespace SimpleWebsocketServer
             _stream.Write(handshakeBytes, 0, handshakeBytes.Length);
 
             // Consume handshake response
-            //ConsumeHandshakeResponse(networkStream);
             ConsumeHandshakeResponse();
         }
 
@@ -58,41 +57,12 @@ namespace SimpleWebsocketServer
 
         private void ConsumeHandshakeResponse()
         {
-            //websocketClient.ConsumeHandshakeResponse();
-
-            INetworkStream networkStream = _stream;
-            NetworkStreamReader sr = new NetworkStreamReader(networkStream);
-
-            string debug = "";
-            string line;
-            while (true)  // TODO: implement a receive timeout
-            {
-                line = sr.ReadUntilCarriageReturn();
-                debug += line + "\r\n";
-                if (line == "") break;  // EOF reached
-            }
+            websocketClient.ConsumeHandshakeResponse();
         }
 
         internal static string GenerateRandomPassword()
         {
-            int tokenLength = 10;
-
-            char[] charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&()".ToCharArray();
-            int byteSize = 256; //Labelling convenience
-            int biasZone = byteSize - (byteSize % charSet.Length);
-
-            byte[] rBytes = new byte[tokenLength]; //Do as much before and after lock as possible
-            char[] rName = new char[tokenLength];
-
-            RandomNumberGenerator rng = RandomNumberGenerator.Create();
-            rng.GetBytes(rBytes);
-            for (var i = 0; i < tokenLength; i++)
-            {
-                rName[i] = charSet[rBytes[i] % charSet.Length];
-            }
-
-            return new string(rName);
-            //return "password";
+            return WebsocketClient.GenerateRandomPassword();
         }
     }
 }
