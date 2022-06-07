@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Threading;
 
 namespace SimpleWebsocketServer
@@ -12,10 +11,14 @@ namespace SimpleWebsocketServer
 
         static void Main(string[] args)
         {
-            //IConfigurationRoot configuration = new ConfigurationBuilder().AddUserSecrets<WebsocketApp>().Build();
+            string? adminPassword = Environment.GetEnvironmentVariable("WEBSOCKET_SERVER_ADMIN_PASSWORD");
 
-            //string adminPassword = configuration["WEBSOCKET_SERVER_ADMIN_PASSWORD"];
-            string adminPassword = "decxzXcSDPLDKCvujds";
+            if (adminPassword == null)
+            {
+                adminPassword = WebsocketClient.GenerateRandomPassword();
+                Console.WriteLine("WEBSOCKET_SERVER_ADMIN_PASSWORD env was empty, generated random admin password of " + adminPassword);
+            }
+
             SimpleWebsocketListener simpleWebsocketServer = new SimpleWebsocketListener("0.0.0.0", 80, 2, adminPassword);
 
             // I guess running this from it's own thread prevents those console bugs where the console wasn't updating until I keypressed it or something...
