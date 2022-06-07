@@ -1,5 +1,5 @@
 {
-    "name": "org.unitypkg",
+    "name": "org.njax.unitypkg",
     "version": "1.0.0",
     "displayName": "SimpleWebsocketServer",
     "description": "This is a simple websocket server",
