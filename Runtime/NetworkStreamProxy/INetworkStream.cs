@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net.Sockets;
 
 namespace SimpleWebsocketServer
 {
@@ -7,6 +8,7 @@ namespace SimpleWebsocketServer
     {
         bool DataAvailable { get; }
         Stream SourceStream { get; }
+        int GetBytesAvailable();
         int ReadByte();
         void WriteByte(byte value);
         void Read(byte[] buffer, int offset, int count);

@@ -18,9 +18,9 @@ namespace SimpleWebsocketServer
             // WebsocketListener.AcceptClient()...
             TcpClient tcpClient = ((TcpListener)parameterz[0]).AcceptTcpClient();
             ChannelBridge channelBridge = (ChannelBridge) parameterz[1]; 
-            INetworkStream networkStream = new NetworkStreamProxy(tcpClient.GetStream());
+            INetworkStream networkStream = new NetworkStreamProxy(tcpClient);
             WebsocketClient websocketClient = new WebsocketClient(networkStream, channelBridge);
-            
+
             string remoteIp = GetRemoteIp(tcpClient);
 
             Console.WriteLine("A client connected from {0}", remoteIp);
@@ -28,14 +28,14 @@ namespace SimpleWebsocketServer
             // DealWithWebsocketUpgrade()
             while (!tcpClient.Connected) ;
             while (!networkStream.DataAvailable) ; // block here till we have data
-            while (tcpClient.Available < 2) ;      // Wait for the header bytes
+            while (networkStream.GetBytesAvailable() < 2) ;      // Wait for the header bytes
 
             bool handshakSuccess = websocketClient.ReceiveHttpUpgradeRequest();
 
             // Handle ordinary websocket communication
             while (tcpClient.Connected)
             {
-                Console.WriteLine("New Bytes ready for processing from client: " + tcpClient.Available);
+                Console.WriteLine("New Bytes ready for processing from client: " + networkStream.GetBytesAvailable());
                 try
                 {
                     WebsocketFrame websocketFrame = websocketClient.ReceiveMessageFromClient();

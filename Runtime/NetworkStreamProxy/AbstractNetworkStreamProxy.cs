@@ -22,6 +22,7 @@ namespace SimpleWebsocketServer
         public abstract Stream SourceStream { get; }
         public abstract Stream WriteStream { get; }
         public abstract MemoryStream ReadLog { get; set; }
+        public abstract int GetBytesAvailable();
         public abstract string GetWritesAsString();
         public abstract byte[] GetWrites();
         public void Read(byte[] buffer, int offset, int count)

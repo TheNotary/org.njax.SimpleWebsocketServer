@@ -41,9 +41,8 @@ namespace SimpleWebsocketServer
         public void ThreadManagementLoop()
         {
             ChannelBridge channelBridge = new ChannelBridge(adminPassword);
-            CancellationTokenSource managementCts = new CancellationTokenSource();
-            channelBridge.ManagementCancelationToken = managementCts;
-            var token = managementCts.Token;
+            channelBridge.ManagementCancelationToken = new CancellationTokenSource();
+            var token = channelBridge.ManagementCancelationToken.Token;
 
             while (!token.IsCancellationRequested)
             {

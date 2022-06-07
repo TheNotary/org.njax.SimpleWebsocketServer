@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using SimpleWebsocketServer;
 
@@ -50,6 +51,13 @@ namespace SimpleWebsocketServerTest
         public bool IsDataAvailable()
         {
             return SourceStream.Position < SourceStream.Length;
+        }
+
+        public override int GetBytesAvailable()
+        {
+            if (SourceStream.Position < SourceStream.Length)
+                    return Convert.ToInt32(SourceStream.Length - SourceStream.Position);
+            return 0;
         }
     }
 }
