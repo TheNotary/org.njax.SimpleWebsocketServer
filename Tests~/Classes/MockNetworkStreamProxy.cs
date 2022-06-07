@@ -57,6 +57,8 @@ namespace SimpleWebsocketServerTest
         {
             if (SourceStream.Position < SourceStream.Length)
                     return Convert.ToInt32(SourceStream.Length - SourceStream.Position);
+            if (IsDataAvailable())
+                return Convert.ToInt32(SourceStream.Length - SourceStream.Position);
             return 0;
         }
     }
