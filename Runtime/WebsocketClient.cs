@@ -104,7 +104,7 @@ namespace SimpleWebsocketServer
         
         public WebsocketFrame ReceiveMessageFromClient()
         {
-            while (!_stream.DataAvailable) ;  // TODO: implement a time out and fancy stuff for waiting for 2 bytes available specifically
+            while (_stream.GetBytesAvailable() < 2) ;
             Byte[] headerBytes = new Byte[2];
             _stream.Read(headerBytes, 0, headerBytes.Length);
 
